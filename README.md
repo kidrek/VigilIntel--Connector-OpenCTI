@@ -16,7 +16,7 @@ Connecteur **external-import** pour [OpenCTI](https://www.opencti.io/) qui ingè
 ## Architecture
 
 ```
-vigilintel-connector/
+VigilIntel--Connector-OpenCTI/
 ├── docker-compose.yml
 ├── Dockerfile
 ├── entrypoint.sh
@@ -101,7 +101,7 @@ vigilintel-connector/
 ### Manuel (développement)
 
 ```bash
-cd vigilintel-connector
+cd VigilIntel--Connector-OpenCTI
 python -m venv env
 source env/bin/activate
 pip install -r requirements.txt
