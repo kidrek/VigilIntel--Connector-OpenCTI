@@ -84,11 +84,16 @@ vigilintel-connector/
    cd vigilintel-connector
    ```
 
-2. Configurer les variables dans `docker-compose.yml` :
+2. Construire l'image :
+   ```bash
+   docker compose build --no-cache
+   ```
+
+3. Configurer les variables dans `docker-compose.yml` :
    - `OPENCTI_URL` et `OPENCTI_TOKEN`
    - `CONNECTOR_ID` (générer un UUID : `python -c "import uuid; print(uuid.uuid4())"`)
 
-3. Lancer :
+4. Lancer :
    ```bash
    docker compose up -d
    ```
