@@ -1,0 +1,17 @@
+opencti:
+  url: "http://localhost:8080"
+  token: "ChangeMe"
+
+connector:
+  id: "ChangeMe"                      # Valid UUIDv4 — generate one with: python -c "import uuid; print(uuid.uuid4())"
+  type: "EXTERNAL_IMPORT"
+  name: "VigilIntel"
+  scope: "stix2"
+  log_level: "info"
+  duration: "PT24H"                   # ISO-8601 duration between runs (used by some scheduler modes)
+
+vigilintel:
+  language: "fr"                      # "fr" or "en"
+  lookback_days: 7                    # Number of past days to backfill on first run
+  interval_hours: 24                  # Hours between each execution cycle
+  base_url: "https://raw.githubusercontent.com/kidrek/VigilIntel/main/{year}/{month}/{year}-{month}-{day}-report.stix_{lang}.json"

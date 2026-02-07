@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  connector-vigilintel:
+    build: .
+    image: opencti/connector-vigilintel:latest
+    environment:
+      # ── OpenCTI platform ─────────────────────────────────────────
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=ChangeMe
+
+      # ── Connector metadata ──────────────────────────────────────
+      - CONNECTOR_ID=ChangeMe                 # Generate: python -c "import uuid; print(uuid.uuid4())"
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - CONNECTOR_NAME=VigilIntel
+      - CONNECTOR_SCOPE=stix2
+      - CONNECTOR_LOG_LEVEL=info
+
+      # ── VigilIntel-specific settings ─────────────────────────────
+      - VIGILINTEL_LANGUAGE=fr                # fr | en
+      - VIGILINTEL_LOOKBACK_DAYS=7            # Backfill depth on first run
+      - VIGILINTEL_INTERVAL_HOURS=24          # Hours between runs
+    restart: always
+    depends_on:
+      - opencti
