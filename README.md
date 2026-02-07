@@ -80,8 +80,8 @@ vigilintel-connector/
 
 1. Cloner le dépôt :
    ```bash
-   git clone <repo-url>
-   cd vigilintel-connector
+   git clone https://github.com:kidrek/VigilIntel--Connector-OpenCTI.git
+   cd VigilIntel--Connector-OpenCTI
    ```
 
 2. Construire l'image :
