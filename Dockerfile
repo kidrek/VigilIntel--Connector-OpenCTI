@@ -1,7 +1,7 @@
 FROM python:3.12-alpine
 
 # Install build dependencies (needed for some pycti deps)
-RUN apk add --no-cache gcc musl-dev libffi-dev
+RUN apk add --no-cache gcc musl-dev libffi-dev libmagic file-dev
 
 # Copy requirements first for better layer caching
 COPY requirements.txt /opt/opencti-connector-vigilintel/

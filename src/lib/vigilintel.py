@@ -49,8 +49,7 @@ class VigilIntelConnector:
         )
         if self.language not in ("fr", "en"):
             self.helper.connector_logger.warning(
-                "Invalid VIGILINTEL_LANGUAGE '%s', defaulting to 'fr'.",
-                self.language,
+                f"[VigilIntel] Invalid VIGILINTEL_LANGUAGE '{self.language}', defaulting to 'fr'."
             )
             self.language = "fr"
 
@@ -80,10 +79,8 @@ class VigilIntelConnector:
         )
 
         self.helper.connector_logger.info(
-            "[VigilIntel] Connector initialised — language=%s, lookback=%d days, interval=%dh",
-            self.language,
-            self.lookback_days,
-            self.interval_hours,
+            f"[VigilIntel] Connector initialised — language={self.language}, "
+            f"lookback={self.lookback_days} days, interval={self.interval_hours}h"
         )
 
     # ─── URL helpers ──────────────────────────────────────────────────
@@ -127,16 +124,14 @@ class VigilIntelConnector:
             # First run → backfill
             start_date = today - timedelta(days=self.lookback_days)
             self.helper.connector_logger.info(
-                "[VigilIntel] First run detected — backfilling from %s to %s",
-                start_date.strftime("%Y-%m-%d"),
-                today.strftime("%Y-%m-%d"),
+                f"[VigilIntel] First run detected — backfilling from "
+                f"{start_date.strftime('%Y-%m-%d')} to {today.strftime('%Y-%m-%d')}"
             )
         else:
             start_date = last_processed + timedelta(days=1)
             if start_date > today:
                 self.helper.connector_logger.info(
-                    "[VigilIntel] Already up-to-date (last processed: %s).",
-                    last_processed.strftime("%Y-%m-%d"),
+                    f"[VigilIntel] Already up-to-date (last processed: {last_processed.strftime('%Y-%m-%d')})."
                 )
                 return []
 
@@ -156,14 +151,12 @@ class VigilIntelConnector:
         Returns the parsed JSON dict, or ``None`` on failure.
         """
         try:
-            self.helper.connector_logger.info(
-                "[VigilIntel] Fetching %s", url
-            )
+            self.helper.connector_logger.info(f"[VigilIntel] Fetching {url}")
             response = requests.get(url, timeout=30)
 
             if response.status_code == 404:
                 self.helper.connector_logger.warning(
-                    "[VigilIntel] Report not found (404): %s", url
+                    f"[VigilIntel] Report not found (404): {url}"
                 )
                 return None
 
@@ -172,12 +165,12 @@ class VigilIntelConnector:
 
         except requests.exceptions.JSONDecodeError:
             self.helper.connector_logger.error(
-                "[VigilIntel] Invalid JSON received from %s", url
+                f"[VigilIntel] Invalid JSON received from {url}"
             )
             return None
         except requests.exceptions.RequestException as e:
             self.helper.connector_logger.error(
-                "[VigilIntel] Network error fetching %s: %s", url, str(e)
+                f"[VigilIntel] Network error fetching {url}: {e}"
             )
             return None
 
@@ -209,7 +202,7 @@ class VigilIntelConnector:
             return True
         except Exception as e:
             self.helper.connector_logger.error(
-                "[VigilIntel] Failed to send bundle to OpenCTI: %s", str(e)
+                f"[VigilIntel] Failed to send bundle to OpenCTI: {e}"
             )
             return False
 
@@ -235,13 +228,13 @@ class VigilIntelConnector:
         )
 
         self.helper.connector_logger.info(
-            "[VigilIntel] Processing %d date(s)…", total
+            f"[VigilIntel] Processing {total} date(s)…"
         )
 
         for idx, target_date in enumerate(dates, start=1):
             date_str = target_date.strftime("%Y-%m-%d")
             self.helper.connector_logger.info(
-                "[VigilIntel] [%d/%d] Processing %s…", idx, total, date_str
+                f"[VigilIntel] [{idx}/{total}] Processing {date_str}…"
             )
 
             url = self._build_url(target_date)
@@ -255,8 +248,7 @@ class VigilIntelConnector:
 
             if not self._validate_stix_bundle(bundle):
                 self.helper.connector_logger.error(
-                    "[VigilIntel] Invalid STIX bundle for %s — skipping.",
-                    date_str,
+                    f"[VigilIntel] Invalid STIX bundle for {date_str} — skipping."
                 )
                 error_count += 1
                 last_success_date = target_date
@@ -264,9 +256,7 @@ class VigilIntelConnector:
 
             nb_objects = len(bundle.get("objects", []))
             self.helper.connector_logger.info(
-                "[VigilIntel] Valid STIX bundle for %s — %d objects.",
-                date_str,
-                nb_objects,
+                f"[VigilIntel] Valid STIX bundle for {date_str} — {nb_objects} objects."
             )
 
             if self._send_to_opencti(bundle, work_id):
@@ -284,8 +274,7 @@ class VigilIntelConnector:
             }
             self.helper.set_state(new_state)
             self.helper.connector_logger.info(
-                "[VigilIntel] State updated — last_processed_date=%s",
-                last_success_date.strftime("%Y-%m-%d"),
+                f"[VigilIntel] State updated — last_processed_date={last_success_date.strftime('%Y-%m-%d')}"
             )
 
         # ── Finalize work ─────────────────────────────────────────────
@@ -294,30 +283,26 @@ class VigilIntelConnector:
             f"{success_count} imported, {skip_count} skipped, {error_count} errors "
             f"(out of {total} dates)"
         )
-        self.helper.connector_logger.info("[VigilIntel] %s", message)
+        self.helper.connector_logger.info(f"[VigilIntel] {message}")
         self.helper.api.work.to_processed(work_id, message)
 
     # ─── Scheduler entry-point ────────────────────────────────────────
 
     def run(self) -> None:
         """Main loop — runs processing then sleeps for the configured interval."""
-        self.helper.connector_logger.info(
-            "[VigilIntel] Connector started."
-        )
+        self.helper.connector_logger.info("[VigilIntel] Connector started.")
 
         while True:
             try:
                 self._process_dates()
             except Exception as e:
                 self.helper.connector_logger.error(
-                    "[VigilIntel] Unexpected error during processing: %s",
-                    str(e),
+                    f"[VigilIntel] Unexpected error during processing: {e}"
                 )
 
             # Sleep until next run
             sleep_seconds = self.interval_hours * 3600
             self.helper.connector_logger.info(
-                "[VigilIntel] Sleeping %d hours until next run…",
-                self.interval_hours,
+                f"[VigilIntel] Sleeping {self.interval_hours} hours until next run…"
             )
             time.sleep(sleep_seconds)
