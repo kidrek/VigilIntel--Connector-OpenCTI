@@ -264,10 +264,9 @@ class VigilIntelConnector:
                 last_success_date = target_date
             else:
                 error_count += 1
-                last_success_date = target_date
 
         # ── Update connector state ────────────────────────────────────
-        if last_success_date is not None:
+        if last_success_date is not None and success_count >= 1:
             new_state = {
                 "last_processed_date": last_success_date.isoformat(),
                 "last_run": datetime.now(timezone.utc).isoformat(),
